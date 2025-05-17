@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 if [ -f .env ]; then
     # shellcheck disable=SC1091
     . .env

@@ -1,0 +1,8 @@
+services:
+  openwebrx-telegram-bot:
+    image: slechev/openwebrx-telegram-bot
+    env_file:
+      - .env
+    volumes:
+      - /tmp/geoip:/tmp/geoip
+    restart: unless-stopped

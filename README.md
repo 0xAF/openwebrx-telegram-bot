@@ -1,23 +1,22 @@
 # openwebrx-telegram-bot
 
-Telegram bot to report OpenWebRX MQTT events.
+Telegram reporting OpenWebRX MQTT events to @YourChannel or in private message.
 
 ## Overview
 
-**openwebrx-telegram-bot** listens to MQTT events from an OpenWebRX server and sends notifications to a specified Telegram chat. It provides real-time updates about client connections, disconnections, chat messages, and receiver profile changes.
+**openwebrx-telegram-bot** listens to MQTT events from an OpenWebRX server and sends notifications to a specified Telegram chat. It provides real-time updates about client connections, disconnections, chat messages, receiver profile changes, etc.
 
 ## Features
 
-- Connects to an MQTT broker and subscribes to OpenWebRX topics.
-- Sends notifications to a Telegram chat.
-- Includes geolocation lookup for client IP addresses.
+- Includes offline geolocation lookup for client IP addresses. You need maxmind.com free license key.
 
 ## Requirements
 
-- Node.js (v16+ recommended)
-- Access to an MQTT broker used by OpenWebRX
-- Telegram Bot Token and Chat ID
-- MaxMind GeoIP API key (for database updates)
+- Node.js
+- A working MQTT Broker.
+- Access to an MQTT broker used by OpenWebRX. [Configure MQTT in OpenWebRX](#configure-mqtt-in-openwebrx).
+- Telegram Bot Token. [Setup Telegram Bot](#setup-telegram-bot).
+- MaxMind GeoIP API License key (for database updates). [Register](https://maxmind.com) for a free account and get a License Key.
 
 ## Installation
 
@@ -43,7 +42,7 @@ Telegram bot to report OpenWebRX MQTT events.
     BOT_TOKEN=your_telegram_bot_token
     BOT_CHAT_ID=your_telegram_chat_id
     MAXMIND_API_KEY=your_maxmind_api_key
-    GEODATADIR=/tmp/geoip
+    GEODATADIR=/tmp/geoip # absolute path
     ```
 
 1. Update GeoIP database:
@@ -52,13 +51,49 @@ Telegram bot to report OpenWebRX MQTT events.
     ./update-geoip-db.sh
     ```
 
+1. Start the bot:
+
+    ```sh
+    npm run start
+    ```
+
+## Docker Installation
+
+You can also run the bot using Docker. This is the easiest way to get started if you don't want to install Node.js and dependencies manually.
+
+1. Get the docker image by one of the following methods:
+
+    - Pull from Docker hub.
+
+        ```sh
+        docker pull slechev/openwebrx/telegram-bot
+        ```
+
+    - Build it yourself.
+
+        ```sh
+        docker build -t openwebrx-telegram-bot .
+        ```
+
+1. Create a `.env` file in the project directory with your configuration (see above for required variables).
+
+1. Run the container, mounting the directory for GeoIP data and using the .env file:
+
+    - Docker stand alone
+
+        ```sh
+        docker run --env-file .env -v /tmp/geoip:/tmp/geoip slechev/openwebrx-telegram-bot
+        ```
+
+    - Docker compose (use the exmample file)
+
+        ```sh
+        docker compose up -d
+        ```
+
+This will start the bot inside a container, using your environment variables and the GeoIP database directory.
+
 ## Usage
-
-Build and start the bot:
-
-```sh
-npm run start
-```
 
 The bot will connect to the MQTT broker and start sending notifications to the configured Telegram chat.
 
@@ -72,12 +107,28 @@ The bot will connect to the MQTT broker and start sending notifications to the c
 | MAXMIND_API_KEY    | MaxMind GeoIP API key (for DB updates)                    | Yes      |
 | GEODATADIR         | Directory for geolocation data files                      | Yes      |
 
+## Configure MQTT in OpenWebRX
+
+- Open OpenWebRX Settings page.
+- Go to "Spotting and reporting".
+- Find "MQTT settings" section.
+- Fill the required data.
+- Set the "MQTT topic" to "`openwebrx/YourReceiverShortName`"
+
 ## MQTT Topics
 
 The bot subscribes to the following MQTT topics from OpenWebRX:
 
 - `openwebrx/+/CLIENT` — for client connection, disconnection, and chat messages
 - `openwebrx/+/RX` — for receiver profile changes
+
+This is due to support multiple OpenWebRx receivers in one MQTT broker. You should set the "MQTT topic" in OpenWebRx to "`openwebrx/ReceiverShortName`"
+
+## Setup Telegram Bot
+
+- Create new Bot with @BotFather. See [instructions](https://core.telegram.org/bots/features#creating-a-new-bot).
+- Get the Token and set it in your `.env` file.
+- (Optionaly) Create a Channel and add the Bot to the channel (with admin role).
 
 ## License
 

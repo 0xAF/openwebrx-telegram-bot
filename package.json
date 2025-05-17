@@ -31,7 +31,8 @@
     "dotenv": "^16.5.0",
     "geoip-lite": "^1.4.10",
     "mqtt": "^5.13.0",
-    "telegraf": "^4.16.3"
+    "telegraf": "^4.16.3",
+    "typescript": "^5.8.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.27.0",
@@ -40,7 +41,6 @@
     "@types/geoip-lite": "^1.4.4",
     "eslint": "^9.27.0",
     "globals": "^16.1.0",
-    "typescript": "^5.8.3",
     "typescript-eslint": "^8.32.1"
   }
 }
