@@ -1,0 +1,46 @@
+{
+  "name": "openwebrx-telegram-bot",
+  "version": "0.1.1",
+  "description": "Telegram bot for OpenWebRX",
+  "keywords": [
+    "Telegram",
+    "Bot",
+    "OpenWebRX",
+    "OWRX",
+    "MQTT"
+  ],
+  "homepage": "https://github.com/0xAF/openwebrx-telegram-bot#readme",
+  "bugs": {
+    "url": "https://github.com/0xAF/openwebrx-telegram-bot/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/0xAF/openwebrx-telegram-bot.git"
+  },
+  "license": "MIT",
+  "author": "Stanislav Lechev [0xAF] - LZ2SLL",
+  "type": "commonjs",
+  "main": "dist/src",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+     "lint": "eslint src/ --ext .ts",
+    "start": "tsc && node dist/src/index.js"
+  },
+  "dependencies": {
+    "@telegraf/entity": "^0.6.0",
+    "dotenv": "^16.5.0",
+    "geoip-lite": "^1.4.10",
+    "mqtt": "^5.13.0",
+    "telegraf": "^4.16.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.27.0",
+    "@eslint/json": "^0.12.0",
+    "@eslint/markdown": "^6.4.0",
+    "@types/geoip-lite": "^1.4.4",
+    "eslint": "^9.27.0",
+    "globals": "^16.1.0",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.32.1"
+  }
+}
