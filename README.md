@@ -8,7 +8,7 @@ Telegram reporting OpenWebRX MQTT events to @YourChannel or in private message.
 
 ## Features
 
-- Includes offline geolocation lookup for client IP addresses. You need maxmind.com free license key.
+- Includes offline geolocation lookup for client IP addresses. You need maxmind.com free license key. (*WARNING*: Keep in mind that the first run will take few minutes to cache the GeoIP data)
 
 ## Requirements
 
