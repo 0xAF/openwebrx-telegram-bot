@@ -34,15 +34,17 @@ console.log(`Connecting to MQTT broker at ${process.env.MQTT_BROKER_URL}...`);
 const client = mqtt.connect(process.env.MQTT_BROKER_URL, { username: process.env.MQTT_USERNAME, password: process.env.MQTT_PASSWORD });
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
-const v2 = escapers.MarkdownV2;
+
+interface Escapers {
+  MarkdownV2: (input: string) => string;
+}
+const v2 = (x: string | undefined | null): string => x && x.length ? (escapers as Escapers).MarkdownV2(x) : "";
 
 client.on("connect", () => {
-  client.subscribe("openwebrx/+/CLIENT", err => {
-    if (err) throw err;
-  });
-  client.subscribe("openwebrx/+/RX", err => {
-    if (err) throw err;
-  });
+  client.subscribe("openwebrx/CLIENT");
+  client.subscribe("openwebrx/RX");
+  client.subscribe("openwebrx/+/CLIENT");
+  client.subscribe("openwebrx/+/RX");
 });
 
 client.on("message", async (topic, message) => {
@@ -50,27 +52,27 @@ client.on("message", async (topic, message) => {
   const receiver = parts.length === 3 ? parts[1] : undefined;
   const action = parts[parts.length - 1];
   const data = JSON.parse(message.toString());
-  let msg = `[__*${v2(receiver)}*__]: `
+  let msg = receiver ? `[__*${v2(receiver)}*__]: ` : '';
 
   if (action === "CLIENT") {
-    const ip = data.ip.replace("::ffff:", "");
-    const geo = geoip.lookup(ip);
-    switch (data.state) {
+    const ip = data?.ip?.replace("::ffff:", "");
+    const geo = geoip?.lookup(ip);
+    switch (data?.state) {
       case "Connected":
         msg += `_client connected_`;
         break;
       case "Disconnected":
-        if (data.banned) {
+        if (data?.banned) {
           msg += `_client banned_`;
         } else {
           msg += `_client disconnected_`;
         }
         break;
       case "ChatMessage":
-        msg += `*${v2(data.name)}*: ${v2(data.message)}`;
+        msg += `*${v2(data?.name)}*: ${v2(data?.message)}`;
         break;
       default:
-        msg += JSON.stringify(data);
+        msg += v2(JSON.stringify(data));
     }
     if (geo) {
       msg += `\n[${v2(ip)}](${v2("https://ip-api.com#" + ip)})`;
@@ -83,7 +85,7 @@ client.on("message", async (topic, message) => {
       msg += `\n${v2(ip)}`;
     }
   } else if (action === "RX") {
-    msg += `_Profile on_ *${v2(data.source)}*  ⇾  *${v2(data.profile)}* \\(${v2((data.freq / 1000 / 1000).toFixed(3))} MHz\\)`;
+    msg += `_Profile on_ *${v2(data?.source)}*  ⇾  *${v2(data?.profile)}* \\(${v2((data?.freq / 1000 / 1000).toFixed(3))} MHz\\)`;
   }
 
   console.log(`${msg}`);
@@ -92,9 +94,9 @@ client.on("message", async (topic, message) => {
 
 
 bot.on(message('text'), async (ctx) => {
-  console.log(ctx.update.message);
+  console.log(`Private message:`, ctx.update.message);
   // Explicit usage
-  await ctx.telegram.sendMessage(ctx.message.chat.id, `Hello ${ctx.message.from.first_name}`)
+  await ctx.telegram.sendMessage(ctx.message.chat.id, `Hello ${ctx.message.from.first_name}, your Chat ID is: ${ctx.message.chat.id}`)
 })
 
 console.log(`Starting Telegram Bot...`);
