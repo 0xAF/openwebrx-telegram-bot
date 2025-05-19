@@ -8,8 +8,15 @@ Telegram reporting OpenWebRX MQTT events to @YourChannel or in private message.
 
 ## Features
 
-- Includes offline geolocation lookup for client IP addresses. You need maxmind.com free license key. (*WARNING*: Keep in mind that the first run will take few minutes to cache the GeoIP data)
+- The bot will reply to some [Commands](#commands)
+- Includes offline geolocation lookup for client IP addresses. You need maxmind.com free license key. (**WARNING**: Keep in mind that the first run will take few minutes to cache the GeoIP data)
 - The Bot will reply to your private messages with your Chat ID (so you can use it later in the config)
+
+# Commands
+
+- /help - show help
+- /getid - reply with ChatID of the user, who sent the command
+- /last <`mode`> [`how_many`] - reply with last messages from background decoders
 
 ## Requirements
 
