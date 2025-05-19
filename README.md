@@ -16,11 +16,16 @@ See [ChangeLog](CHANGELOG.md) for more info.
 - Includes offline geolocation lookup for client IP addresses. You need maxmind.com free license key. (**WARNING**: Keep in mind that the first run will take few minutes to cache the GeoIP data)
 - The Bot will reply to your private messages with your Chat ID (so you can use it later in the config)
 
-# Commands
+## Commands
 
 - /help - show help
 - /getid - reply with ChatID of the user, who sent the command
 - /last <`mode`> [`how_many`] - reply with last messages from background decoders
+
+## Screenshots
+
+![reports](./assets/bot1.png)
+![commands](./assets/bot2.png)
 
 ## Requirements
 

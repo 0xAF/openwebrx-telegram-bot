@@ -1,3 +1,4 @@
+assets
 node_modules
 npm-debug.log
 Dockerfile
@@ -6,4 +7,14 @@ Dockerfile
 dist
 .env
 .vscode
+.github
+.env.example
+.gitignore
+.versionrc.json
+build-docker.sh
+CHANGELOG.md
+docker-compose-example.yml
+eslint.config.mjs
+eslintrc.js
+README.md
 
