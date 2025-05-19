@@ -6,6 +6,10 @@ Telegram reporting OpenWebRX MQTT events to @YourChannel or in private message.
 
 **openwebrx-telegram-bot** listens to MQTT events from an OpenWebRX server and sends notifications to a specified Telegram chat. It provides real-time updates about client connections, disconnections, chat messages, receiver profile changes, etc.
 
+## ChangeLog
+
+See [ChangeLog](CHANGELOG.md) for more info.
+
 ## Features
 
 - The bot will reply to some [Commands](#commands)
