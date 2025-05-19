@@ -209,7 +209,7 @@ bot.command('last', async (ctx) => {
   let reply = `Last messages in mode *${v2(mode)}*\\:\n`;
   const msgs = lastBuf.slice(-howMany).reverse();
   for (const msg of msgs) {
-    reply += '▶ ';
+    reply += '\n▶ ';
     if (mode === "FT8" || mode === 'FT4') {
       // {"timestamp":1747612417000,"db":-1,"dt":-0.1,"freq":7048925,"msg":"CQ OE7LGT JN57","callsign":"OE7LGT","locator":"JN57","mode":"FT4","interval":7.5,"ccode":"AT","country":"Austria"}
       // {"timestamp":1747609095000,"db":-20,"dt":0.3,"freq":7074291,"msg":"CQ IN3IZQ JN56","callsign":"IN3IZQ","locator":"JN56","mode":"FT8","interval":15,"ccode":"IT","country":"Italy"}
@@ -228,12 +228,11 @@ bot.command('last', async (ctx) => {
         (msg?.country ? `\\[${v2(msg.country)}\\] ` : "") +
         (msg?.lat && msg?.lon
           ? `[Map](https://www.openstreetmap.org/?mlat=${msg.lat}&mlon=${msg.lon}) `
-          : "") +
-        `\n`;
+          : "");
     } else if (mode === 'AIS') {
       // {"source":"AIS","destination":"APDW16","path":[],"raw":"","type":"object","object":"207834870","live":true,"timestamp":1747611660000,"lat":43.18933333333333,"lon":27.654166666666665,"symbol":{"symbol":"s","table":"/","index":82,"tableindex":14},"course":82,"speed":0,"comment":"RIGEL, LZH3487, dest. VARNA","ccode":"BG","country":"Bulgaria","mode":"AIS"}
       if (msg?.type === "nmea") {
-        reply += `NMEA Message\n`;
+        reply += `NMEA Message`;
         continue;
       }
       reply += `__${v2(timeStampToString(msg?.timestamp))}__ ` +
@@ -244,8 +243,7 @@ bot.command('last', async (ctx) => {
         (msg?.lat && msg?.lon
           ? `[Map](https://www.openstreetmap.org/?mlat=${msg.lat}&mlon=${msg.lon}) `
           : "") +
-        (msg?.comment ? `\\[${v2(msg.comment)}\\] ` : "") +
-        `\n`;
+        (msg?.comment ? `\\[${v2(msg.comment)}\\] ` : "");
     } else if (mode === 'APRS') {
       // {"source":"TB1DVM-7","destination":"APAT51","path":["YM3BUR*","WIDE1*","LZ0DAD*","WIDE2*"],"raw":"","lat":40.965666666666664,"lon":28.660166666666665,"symbol":{"symbol":"y","table":"/","index":88,"tableindex":14},"type":"regular","course":169,"speed":0,"altitude":59.7408,"comment":"OP.MURATHAN 0532 348 3764","mode":"APRS"}
       reply += msg?.timestamp ? `__${v2(timeStampToString(msg?.timestamp))}__ ` : '' +
@@ -260,10 +258,9 @@ bot.command('last', async (ctx) => {
         (msg?.lat && msg?.lon
           ? `[Map](https://www.openstreetmap.org/?mlat=${msg.lat}&mlon=${msg.lon}) `
           : "") +
-        (msg?.comment ? `\\[${v2(msg.comment)}\\] ` : "") +
-        `\n`;
+        (msg?.comment ? `\\[${v2(msg.comment)}\\] ` : "");
     } else {
-      reply += v2(JSON.stringify(msg)) + "\n";
+      reply += v2(JSON.stringify(msg));
     }
   }
 
