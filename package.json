@@ -1,6 +1,6 @@
 {
   "name": "openwebrx-telegram-bot",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Telegram bot for OpenWebRX",
   "keywords": [
     "Telegram",
@@ -23,8 +23,12 @@
   "main": "dist/src",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-     "lint": "eslint src/ --ext .ts",
-    "start": "tsc && node dist/src/index.js"
+    "lint": "eslint src/ --ext .ts",
+    "start": "tsc && node dist/src/index.js",
+    "release": "standard-version",
+    "release:major": "standard-version --release-as major",
+    "release:minor": "standard-version --release-as minor",
+    "release:patch": "standard-version --release-as patch"
   },
   "dependencies": {
     "@telegraf/entity": "^0.6.0",
@@ -41,6 +45,7 @@
     "@types/geoip-lite": "^1.4.4",
     "eslint": "^9.27.0",
     "globals": "^16.1.0",
+    "standard-version": "^9.5.0",
     "typescript-eslint": "^8.32.1"
   }
 }
