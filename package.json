@@ -1,6 +1,6 @@
 {
   "name": "openwebrx-telegram-bot",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Telegram bot for OpenWebRX",
   "keywords": [
     "Telegram",
@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@telegraf/entity": "^0.6.0",
+    "debug": "^4.4.1",
     "dotenv": "^16.5.0",
     "geoip-lite": "^1.4.10",
     "mqtt": "^5.13.0",
