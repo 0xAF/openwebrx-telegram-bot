@@ -2,9 +2,7 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [0.4.1](https://github.com/0xAF/openwebrx-telegram-bot/compare/v0.4.0...v0.4.1) (2025-05-19)
-
-## 0.4.0 (2025-05-19)
+## 0.4.1 (2025-05-19)
 
 - Add DEBUG env var (example: `DEBUG=bot:*` or `DEBUG=bot:*,-bot:Decoders`)
 - Refactor (split) the code

@@ -55,6 +55,7 @@ See [ChangeLog](CHANGELOG.md) for more info.
     BOT_CHAT_ID=your_telegram_chat_id
     MAXMIND_API_KEY=your_maxmind_api_key
     GEODATADIR=/tmp/geoip # absolute path
+    #DEBUG=bot:*,-bot:Decoders # if you want to see debug, without the decoders spam
     ```
 
 1. Update GeoIP database:
@@ -109,15 +110,16 @@ This will start the bot inside a container, using your environment variables and
 
 The bot will connect to the MQTT broker and start sending notifications to the configured Telegram chat.
 
-| Variable           | Description                                               | Required |
-|--------------------|-----------------------------------------------------------|----------|
-| MQTT_BROKER_URL    | URL of the MQTT broker                                    | Yes      |
-| MQTT_USERNAME      | MQTT broker username                                      | No       |
-| MQTT_PASSWORD      | MQTT broker password                                      | No       |
-| BOT_TOKEN          | Telegram bot token                                        | Yes      |
-| BOT_CHAT_ID        | Telegram chat ID (e.g., `@YourChannel` or chat numeric ID)| Yes      |
-| MAXMIND_API_KEY    | MaxMind GeoIP API key (for DB updates)                    | Yes      |
-| GEODATADIR         | Directory for geolocation data files                      | Yes      |
+| Variable           | Description                                                     | Required |
+|--------------------|-----------------------------------------------------------------|----------|
+| MQTT_BROKER_URL    | URL of the MQTT broker                                          | Yes      |
+| MQTT_USERNAME      | MQTT broker username                                            | No       |
+| MQTT_PASSWORD      | MQTT broker password                                            | No       |
+| BOT_TOKEN          | Telegram bot token                                              | Yes      |
+| BOT_CHAT_ID        | Telegram chat ID (e.g., `@YourChannel` or chat numeric ID)      | Yes      |
+| MAXMIND_API_KEY    | MaxMind GeoIP API key (for DB updates)                          | Yes      |
+| GEODATADIR         | Directory for geolocation data files (Do not change for Docker) | Yes      |
+| DEBUG              | Print DEBUG info to the console (use DEBUG=bot:*)               | No       |
 
 ## Configure MQTT in OpenWebRX
 
