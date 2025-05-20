@@ -1,6 +1,6 @@
 # openwebrx-telegram-bot
 
-Telegram reporting OpenWebRX MQTT events to @YourChannel or in private message.
+Telegram bot reporting OpenWebRX MQTT events to @YourChannel or in private message.
 
 ## Overview
 
@@ -103,7 +103,7 @@ You can also run the bot using Docker. This is the easiest way to get started if
         docker run --env-file .env -v /tmp/geoip:/tmp/geoip slechev/openwebrx-telegram-bot
         ```
 
-    - Docker compose (use the exmample file)
+    - Docker compose (use the example file)
 
         ```sh
         docker compose up -d
@@ -118,6 +118,7 @@ The bot will connect to the MQTT broker and start sending notifications to the c
 | Variable           | Description                                                     | Required |
 |--------------------|-----------------------------------------------------------------|----------|
 | MQTT_BROKER_URL    | URL of the MQTT broker                                          | Yes      |
+| MQTT_TOPIC_BASE    | MQTT base topic for subscription (default: openwebrx)           | No       |
 | MQTT_USERNAME      | MQTT broker username                                            | No       |
 | MQTT_PASSWORD      | MQTT broker password                                            | No       |
 | BOT_TOKEN          | Telegram bot token                                              | Yes      |
