@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 0.5.0 (2025-08-05)
+
+- Add BOT_ADMIN_ID environment variable
+- Add /alias and /reportbanned commands (only for admins)
+- Alias /getid to /whoami (showing if you're admin)
+
 ## 0.4.1 (2025-05-19)
 
 - Add DEBUG env var (example: `DEBUG=bot:*` or `DEBUG=bot:*,-bot:Decoders`)

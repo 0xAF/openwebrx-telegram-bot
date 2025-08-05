@@ -1,7 +1,7 @@
 #!/bin/sh
 if [ -f .env ]; then
     # shellcheck disable=SC1091
-    . .env
+    source ./.env
     export GEODATADIR
     export MAXMIND_API_KEY
 fi
@@ -11,5 +11,6 @@ if [ -z "$MAXMIND_API_KEY" ] || [ -z "$GEODATADIR" ]; then
     exit 1
 fi
 export LICENSE_KEY=$MAXMIND_API_KEY
+mkdir -p $GEODATADIR $DATA_DIR
 
 node ./node_modules/geoip-lite/scripts/updatedb.js

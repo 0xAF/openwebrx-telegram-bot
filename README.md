@@ -19,8 +19,13 @@ See [ChangeLog](CHANGELOG.md) for more info.
 ## Commands
 
 - /help - show help
-- /getid - reply with ChatID of the user, who sent the command
+- /whoami | /getid - reply with ChatID of the user, who sent the command
 - /last <`mode`> [`how_many`] - reply with last messages from background decoders
+
+## Admin Commands
+
+- /reportbanned <on|off> - Report banned clients to the chat when they try to connect.
+- /alias <`add` | `del`> <`name`> <`CIDR`> - add alias for IP or Network address, one alias can have multiple CIDR
 
 ## Screenshots
 
@@ -35,7 +40,53 @@ See [ChangeLog](CHANGELOG.md) for more info.
 - Telegram Bot Token. [Setup Telegram Bot](#setup-telegram-bot).
 - MaxMind GeoIP API License key (for database updates). [Register](https://maxmind.com) for a free account and get a License Key.
 
-## Installation
+## Docker Installation (recomended)
+
+You can run the bot using Docker. This is the easiest way to get started if you don't want to install Node.js and dependencies manually.
+
+1. Get the docker image by one of the following methods:
+
+    - Pull from Docker Hub:
+
+        ```sh
+        docker pull slechev/openwebrx/telegram-bot
+        ```
+
+    - Or build it yourself:
+
+        ```sh
+        docker build -t openwebrx-telegram-bot .
+        ```
+
+2. Create a `.env` file in the project directory with your configuration (see above for required variables).
+
+3. Run the container, mounting the directories for Bot and GeoIP data and using the .env file:
+
+    - Docker stand alone:
+
+        ```sh
+        docker run --env-file .env -v /tmp/geoip:/tmp/geoip -v /tmp/owrx-bot:/data slechev/openwebrx-telegram-bot
+        ```
+
+    - Docker Compose (recommended for easy management):
+
+        1. Copy the example compose file:
+
+            ```sh
+            cp docker-compose-example.yml docker-compose.yml
+            ```
+
+        2. Edit `docker-compose.yml` and `.env` as needed.
+
+        3. Start the container:
+
+            ```sh
+            docker compose up -d
+            ```
+
+This will start the bot inside a container, using your environment variables and the GeoIP database directory.
+
+## Native Installation
 
 1. Clone the repository:
 
@@ -56,10 +107,12 @@ See [ChangeLog](CHANGELOG.md) for more info.
     MQTT_BROKER_URL="mqtt://your-mqtt-broker:1883"
     MQTT_USERNAME=
     MQTT_PASSWORD=
+    BOT_ADMIN_ID=xxxxxxxxxxxxx # your telegram user id
     BOT_TOKEN=your_telegram_bot_token
     BOT_CHAT_ID=your_telegram_chat_id
     MAXMIND_API_KEY=your_maxmind_api_key
-    GEODATADIR=/tmp/geoip # absolute path
+    GEODATADIR=/tmp/geoip # absolute path (do not use for docker installations)
+    DATA_DIR=/tmp/owrx-bot # absolute path (do not set for docker installations, use volume or bind-mount to /data)
     #DEBUG=bot:*,-bot:Decoders # if you want to see debug, without the decoders spam
     ```
 
@@ -75,42 +128,6 @@ See [ChangeLog](CHANGELOG.md) for more info.
     npm run start
     ```
 
-## Docker Installation
-
-You can also run the bot using Docker. This is the easiest way to get started if you don't want to install Node.js and dependencies manually.
-
-1. Get the docker image by one of the following methods:
-
-    - Pull from Docker hub.
-
-        ```sh
-        docker pull slechev/openwebrx/telegram-bot
-        ```
-
-    - Build it yourself.
-
-        ```sh
-        docker build -t openwebrx-telegram-bot .
-        ```
-
-1. Create a `.env` file in the project directory with your configuration (see above for required variables).
-
-1. Run the container, mounting the directory for GeoIP data and using the .env file:
-
-    - Docker stand alone
-
-        ```sh
-        docker run --env-file .env -v /tmp/geoip:/tmp/geoip slechev/openwebrx-telegram-bot
-        ```
-
-    - Docker compose (use the example file)
-
-        ```sh
-        docker compose up -d
-        ```
-
-This will start the bot inside a container, using your environment variables and the GeoIP database directory.
-
 ## Usage
 
 The bot will connect to the MQTT broker and start sending notifications to the configured Telegram chat.
@@ -123,8 +140,10 @@ The bot will connect to the MQTT broker and start sending notifications to the c
 | MQTT_PASSWORD      | MQTT broker password                                            | No       |
 | BOT_TOKEN          | Telegram bot token                                              | Yes      |
 | BOT_CHAT_ID        | Telegram chat ID (e.g., `@YourChannel` or chat numeric ID)      | Yes      |
+| BOT_ADMIN_ID       | Your Telegram user ID                                           | Yes      |
 | MAXMIND_API_KEY    | MaxMind GeoIP API key (for DB updates)                          | Yes      |
-| GEODATADIR         | Directory for geolocation data files (Do not change for Docker) | Yes      |
+| GEODATADIR         | Directory for geolocation data files (Do not change for Docker) | No       |
+| DATA_DIR           | Directory for bot data (Do not change for Docker)               | No       |
 | DEBUG              | Print DEBUG info to the console (use DEBUG=bot:*)               | No       |
 
 ## Configure MQTT in OpenWebRX

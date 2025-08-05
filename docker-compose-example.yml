@@ -5,4 +5,5 @@ services:
       - .env
     volumes:
       - /tmp/geoip:/tmp/geoip
+      - /tmp/owrx-bot:/data
     restart: unless-stopped

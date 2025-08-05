@@ -5,11 +5,13 @@ import mqtt from "mqtt";
 import { version } from "../../package.json";
 import { Telegraf } from 'telegraf';
 import { message } from 'telegraf/filters';
-import geoip from 'geoip-lite';
+// import geoip from 'geoip-lite';
 import { formatLastMessages } from './decoders-parser';
 import { v2 } from './utils';
 import { formatClientMessage } from './client-parser';
 import { formatRxMessage } from './rs-parser';
+import fs from 'fs';
+import path from 'path';
 
 export class OpenWebRXBot {
     private bot: Telegraf<any>;
@@ -17,7 +19,9 @@ export class OpenWebRXBot {
     private ringBuffers: { [mode: string]: any[] };
     private readonly RING_BUFFER_SIZE = 100;
     private readonly mqttTopicBase: string;
-    private readonly requiredEnvVars = ['MQTT_BROKER_URL', 'BOT_TOKEN', 'BOT_CHAT_ID', 'MAXMIND_API_KEY', 'GEODATADIR'];
+    private readonly requiredEnvVars = ['MQTT_BROKER_URL', 'BOT_TOKEN', 'BOT_CHAT_ID', 'MAXMIND_API_KEY', 'GEODATADIR', 'DATA_DIR'];
+    private showBanned: boolean = true;
+    private ipAliases: { [alias: string]: string[] } = {};
 
     constructor() {
         console.log(`Starting OpenWebRX Telegram Bot v${version}...${process.env.DEBUG ? ` (DEBUG=${process.env.DEBUG})` : ""}`);
@@ -59,8 +63,9 @@ export class OpenWebRXBot {
 
             switch (action) {
                 case "CLIENT": {
-                    msg += formatClientMessage(data);
                     debugMQTT("Client message received on topic %s: %j", topic, data);
+                    if (data.state === "Disconnected" && data?.banned && !this.showBanned) break;
+                    msg += formatClientMessage(data, this.ipAliases);
                     debugTelegram("Sending message to Telegram: %s", msg);
                     await this.bot.telegram.sendMessage(
                         process.env.BOT_CHAT_ID as string,
@@ -99,13 +104,46 @@ export class OpenWebRXBot {
         });
     }
 
+    private isAdmin(chatId: number): boolean {
+        const adminIds = (process.env.BOT_ADMIN_ID || "")
+            .split(",")
+            .map(id => id.trim())
+            .filter(id => /^\d+$/.test(id));
+        return adminIds.includes(String(chatId));
+    }
+
     private setupBot() {
+        try {
+            const aliasesPath = path.join(process.env.DATA_DIR!, 'aliases.json');
+            if (fs.existsSync(aliasesPath)) {
+                const raw = fs.readFileSync(aliasesPath, 'utf-8');
+                this.ipAliases = JSON.parse(raw);
+                console.log(`Loaded ${Object.keys(this.ipAliases).length} IP aliases from ${aliasesPath}`);
+            } else {
+                console.log(`No aliases.json found at ${aliasesPath}, starting with empty aliases.`);
+            }
+        } catch (err) {
+            console.error('Failed to load aliases.json:', err);
+            this.ipAliases = {};
+        }
+
+        const commands = [
+            { command: 'help', description: 'Show help message' },
+            { command: 'whoami', description: 'Get your chat ID and admin status' },
+            { command: 'getid', description: 'Get your chat ID and admin status' },
+            { command: 'last', description: 'Show the last messages in the specified mode' },
+            { command: 'reportbanned', description: '[admin] Show or hide banned clients when they try to connect' },
+            { command: 'alias', description: '[admin] Alias CIDR (IP/Net Address) to name' }
+        ];
+        this.bot.telegram.setMyCommands(commands);
+
+        // Middleware to log processing time and message details
         this.bot.use(async (ctx, next) => {
             const debug = _debug('bot:Profiler');
             const start = Date.now();
             await next();
             const end = Date.now();
-            debug(`Processing message ${ctx.update.update_id} took ${(end - start)} ms`);
+            debug(`Processing message ${ctx.update.update_id} took ${(end - start)} ms, Message details:`, {ctx: ctx.update, chatId: ctx.message?.chat.id, from: ctx.message?.from});
         });
 
         this.bot.start(async (ctx) => {
@@ -113,16 +151,107 @@ export class OpenWebRXBot {
         });
 
         this.bot.help(async (ctx) => {
-            await ctx.reply(`
-/help - Show this help message
-/getid - Get your chat ID
-/last <mode> [how many] - Show the last messages in the specified mode
-`);
+            const helpMsg = commands.map(cmd => `/${cmd.command} - ${cmd.description}`).join('\n');
+            await ctx.reply(helpMsg);
         });
 
-        this.bot.command('getid', async (ctx) => {
-            await ctx.reply(`Your chat ID is: ${ctx.message.chat.id}`);
+        this.bot.command('alias', async (ctx) => {
+            if (!this.isAdmin(ctx.message.chat.id)) {
+                await ctx.reply("You are not an admin, this command is restricted.");
+                return;
+            }
+
+            // Expecting: /alias <add|del> <name> <CIDR>
+            const args = ctx.args || [];
+            if (args.length === 0) {
+                if (Object.keys(this.ipAliases).length === 0) {
+                    await ctx.reply("No IP aliases are currently set.");
+                } else {
+                    const aliasList = Object.entries(this.ipAliases)
+                        .map(([name, cidrs]) => `${name}: ${cidrs.join(', ')}`)
+                        .join('\n');
+                    await ctx.reply(`Current IP aliases:\n${aliasList}`);
+                }
+                return;
+            }
+
+            if (args.length < 3) {
+                await ctx.reply("Usage: /alias <add|del> <name> <CIDR>");
+                return;
+            }
+
+            const [action, name, cidr] = args;
+
+            if (!["add", "del"].includes(action)) {
+                await ctx.reply("First argument must be 'add' or 'del'.\nUsage: /alias <add|del> <name> <CIDR>");
+                return;
+            }
+
+            if (!name || !cidr) {
+                await ctx.reply("Usage: /alias <add|del> <name> <CIDR>");
+                return;
+            }
+
+            if (action === "add") {
+                if (!this.ipAliases[name]) {
+                    this.ipAliases[name] = [];
+                }
+                if (!this.ipAliases[name].includes(cidr)) {
+                    this.ipAliases[name].push(cidr);
+                    await ctx.reply(`Alias added: ${name} -> ${cidr}`);
+                } else {
+                    await ctx.reply(`Alias already exists: ${name} -> ${cidr}`);
+                }
+            } else if (action === "del") {
+                if (this.ipAliases[name]) {
+                    const idx = this.ipAliases[name].indexOf(cidr);
+                    if (idx !== -1) {
+                        this.ipAliases[name].splice(idx, 1);
+                        // Remove alias if empty
+                        if (this.ipAliases[name].length === 0) {
+                            delete this.ipAliases[name];
+                        }
+                        await ctx.reply(`Alias removed: ${name} -> ${cidr}`);
+                    } else {
+                        await ctx.reply(`Alias not found: ${name} -> ${cidr}`);
+                    }
+                } else {
+                    await ctx.reply(`Alias name not found: ${name}`);
+                }
+            }
+
+            // Save to file after any change
+            try {
+                const aliasesPath = path.join(process.env.DATA_DIR!, 'aliases.json');
+                fs.writeFileSync(aliasesPath, JSON.stringify(this.ipAliases, null, 2), 'utf-8');
+            } catch (err) {
+                console.error('Failed to save aliases.json:', err);
+            }
         });
+
+        this.bot.command('reportbanned', async (ctx) => {
+            if (!this.isAdmin(ctx.message.chat.id)) {
+                await ctx.reply("You are not an admin, this command is restricted.");
+                return;
+            }
+            const arg = (ctx.args && ctx.args[0]) ? ctx.args[0].toLowerCase() : undefined;
+            if (!arg) {
+                await ctx.reply(`Show banned is currently ${this.showBanned ? 'ON' : 'OFF'}.\nUsage: /showbanned <on|off>`);
+                return;
+            }
+            if (arg !== 'on' && arg !== 'off') {
+                await ctx.reply('Usage: /showbanned <on|off>');
+                return;
+            }
+            this.showBanned = arg === 'on';
+            await ctx.reply(`Show banned is now ${this.showBanned ? 'ON' : 'OFF'}.`);
+        });
+
+        const handleGetId = async (ctx: any) => {
+            await ctx.reply(`Your chat ID is: ${ctx.message.chat.id} (Admin: ${this.isAdmin(ctx.message.chat.id) ? "Yes" : "No"})`);
+        };
+        this.bot.command('getid', handleGetId);
+        this.bot.command('whoami', handleGetId);
 
         this.bot.command('last', async (ctx) => {
             if (ctx.args.length === 0) {
@@ -171,7 +300,7 @@ export class OpenWebRXBot {
 
         this.bot.on(message('text'), async (ctx) => {
             if ('entities' in ctx.update.message && Array.isArray(ctx.update.message.entities) && ctx.update.message.entities[0]?.type === "bot_command") return;
-            await ctx.telegram.sendMessage(ctx.message.chat.id, `Hello ${ctx.message.from.first_name}, your Chat ID is: ${ctx.message.chat.id}.\nType /help to see available commands.`);
+            await ctx.telegram.sendMessage(ctx.message.chat.id, `Hello ${ctx.message.from.first_name}, your Chat ID is: ${ctx.message.chat.id} (Admin: ${this.isAdmin(ctx.message.chat.id) ? "Yes" : "No"}).\nType /help to see available commands.`);
         });
     }
 
